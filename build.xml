@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+ 
+<project name="tpcc-jdbc" basedir="." default="build-jar">
+    <description>tpcc-jdbc</description>
+    <property environment="env" />
+    <property name="project.version" value="1.0" /> 
+    
+    <property name="src.dir" value="${basedir}/src" />
+    <property name="lib.dir" value="${basedir}/lib" />
+ 
+    <property name="build.dir" value="${basedir}/build" />
+    <property name="build.classes" value="${build.dir}/classes" />
+ 
+    <property name="dist.name" value="tpcc-jdbc" />
+    <property name="dist.dir" value="dist" />
+    <!--
+    <property name="dist.bin" value="${dist.dir}/bin" />
+    <property name="dist.lib" value="${dist.dir}/lib" />
+    <property name="dist.docs" value="${dist.dir}/docs" />
+    <property name="dist.etc" value="${dist.dir}/etc" />
+    -->
+ 
+    <property name="debuglevel" value="source,lines,vars" />
+    <property name="javac.optimize" value="false" />
+    <property name="javac.debug" value="true" />
+    <property name="javac.deprecation" value="false" />
+    <property name="javac.encoding" value="UTF-8" />
+    <property name="javac.source" value="11" />
+    <property name="javac.target" value="11" />
+    
+    <property name="manifest.main.class" value="org.littlestar.tpcc.Benchmark" /> 
+    <property name="manifest.specification.title" value="tpcc-jdbc" /> 
+    <property name="manifest.version" value="${project.version}" /> 
+    
+    <path id="classpath">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+    
+    <target name="init" description="Initialize build and dist folders">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${build.classes}" />
+        <mkdir dir="${dist.dir}" />
+    </target>
+ 
+    <target name="clean" depends="init" description="Removes build and dist folders">
+        <delete dir="${build.dir}" />
+        <delete dir="${build.classes}" />
+        <delete dir="${dist.dir}" />
+    </target>
+ 
+    <target name="compile" depends="init">
+        <javac debug="${javac.debug}" 
+        debuglevel="${debuglevel}" 
+        includeantruntime="false" 
+        destdir="${build.classes}" 
+        srcdir="${src.dir}" 
+        optimize="${javac.optimize}" 
+        deprecation="${javac.deprecation}" 
+        source="${javac.source}" 
+        target="${javac.target}" 
+        encoding="${javac.encoding}">
+            <classpath refid="classpath" />
+            <compilerarg value="-Xlint:unchecked" />
+            <compilerarg value="-Xlint:deprecation" />
+        </javac>
+    </target>
+ 
+    <target name="build-jar" depends="compile" description="Generate the jar file.">
+        <jar destfile="${dist.dir}/${dist.name}.jar">
+            <manifest>
+                <attribute name="Main-Class" value="${manifest.main.class}" />
+                <attribute name="Specification-Title" value="${manifest.specification.title}" />
+                <attribute name="Class-Path" value="${manifest.classpath}" />
+                <attribute name="Manifest-Version" value="${manifest.version}" />
+            </manifest>
+            <fileset dir="${build.classes}"/>
+        </jar>
+		<copy todir="${dist.dir}/lib" overwrite="true">
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar"/>
+			</fileset>
+		</copy>
+    	
+		<copy todir="${dist.dir}/deploy" overwrite="true">
+			<fileset dir="${basedir}/deploy">
+				<include name="**"/>
+			</fileset>
+		</copy>
+    	
+		<copy todir="${dist.dir}/demos" overwrite="true">
+			<fileset dir="${basedir}/demos">
+				<include name="**"/>
+			</fileset>
+		</copy>
+    	
+		<copy file="${basedir}/tpcc.cmd" tofile="${dist.dir}/tpcc.cmd" overwrite="true" />
+		<copy file="${basedir}/tpcc.sh" tofile="${dist.dir}/tpcc.sh" overwrite="true" />
+		<chmod file="${dist.dir}/tpcc.sh" perm="ug+rx"/>
+    	<copy file="${basedir}/LICENSE" tofile="${dist.dir}/LICENSE" overwrite="true" />
+    	<copy file="${basedir}/NOTICE" tofile="${dist.dir}/NOTICE" overwrite="true" />
+    	<copy file="${basedir}/README.md" tofile="${dist.dir}/README.md" overwrite="true" />
+    	
+        <delete dir="${build.dir}" />
+    </target>
+</project>

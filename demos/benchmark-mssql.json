@@ -1,0 +1,21 @@
+{
+  "benchmark": {
+	"dbms": "MSSQL",
+    "warehouses": "5",
+    "threads": "5",
+	"ramp-up": "6",
+    "runtime": "60",
+    "report-interval": "4",
+    "log-level": "all"
+  },
+  "connectionPool": {
+    "jdbcUrl": "jdbc:sqlserver://127.0.0.1:1433;databaseName=tpcc",
+	"username": "tpcc_user",
+	"password": "tpcc_passwd",
+	//"driverClassName": "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+    "maximumPoolSize": "5"
+  },
+  "dataSource": {
+  	"encrypt": "false"
+  }
+}

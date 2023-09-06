@@ -1,0 +1,19 @@
+{
+  "benchmark": {
+	"dbms": "Oracle",
+    "warehouses": "2",
+    "threads": "5",
+	"ramp-up": "0",
+    "runtime": "20",
+    "report-interval": "2",
+    "log-level": "info"
+  },
+  "connectionPool": {
+    "jdbcUrl": "jdbc:oracle:thin:@//127.0.0.1:1521/TESTDB1",
+	"username": "tpcc",
+	"password": "tpcc_passwd",
+    "maximumPoolSize": "5"
+  },
+  "dataSource": {
+  }
+}

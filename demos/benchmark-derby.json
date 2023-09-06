@@ -1,0 +1,19 @@
+{
+  "benchmark": {
+	"dbms": "Derby",
+    "warehouses": "5",
+    "threads": "5",
+	"ramp-up": "6",
+    "runtime": "60",
+    "report-interval": "4",
+    "log-level": "info"
+  },
+  "connectionPool": {
+    "jdbcUrl": "jdbc:derby://127.0.0.1:1527/tpcc",
+	"username": "tpcc_user",
+	"password": "tpcc_passwd",
+    "maximumPoolSize": "5"
+  },
+  "dataSource": {
+  }
+}

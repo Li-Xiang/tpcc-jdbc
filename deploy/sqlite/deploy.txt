@@ -1,0 +1,15 @@
+1. download jdbc
+----------------
+Download mysql jdbc driver(https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/), and extract sqlite-jdbc-*.jar to lib directory.
+
+2. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-sqlite.json
+
+3. Run TPC-C benchmark.
+------------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-sqlite.json
+
+4. Drop database.
+-----------------
+Drop tpcc datafile by using OS remove command.

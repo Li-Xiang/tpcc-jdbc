@@ -1,0 +1,17 @@
+{
+  "benchmark": {
+	"dbms": "H2",
+    "warehouses": "2",
+    "threads": "5",
+	"ramp-up": "0",
+    "runtime": "20",
+    "report-interval": "2",
+    "log-level": "info"
+  },
+  "connectionPool": {
+  },
+  "dataSource": {
+    "driver": "org.h2.Driver",
+	"url": "jdbc:h2:tcp://127.0.0.1:9092//data/h2/tpcc"
+  }
+}

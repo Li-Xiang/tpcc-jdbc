@@ -1,0 +1,45 @@
+1. download jdbc
+----------------
+Download mssql jdbc driver from IBM (https://www.ibm.com/support/pages/db2-jdbc-driver-versions-and-downloads), and extract db2jcc4.jar to lib directory.
+
+2. Create database tpcc
+-----------------------
+OS User tpcc_user
+# groupadd db2group
+# useradd -g db2group tpcc_user
+# passwd tpcc_user
+
+Create DB
+# su - db2inst1
+$ db2
+db2 => create db tpcc on '/data/db2/10.5' using codeset UTF-8 territory us collate using system pagesize 8192
+db2 => connect to tpcc
+db2 => grant bindadd on database to user tpcc_user
+db2 => grant connect on database to user tpcc_user
+db2 => grant load on database to user tpcc_user
+
+3. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-db2.json
+
+4. Run TPC-C benchmark.
+-----------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-db2.json
+
+5. (optional) Drop TPC-C tables and data.
+-----------------------------------------
+$ ./tpcc.sh drop ./demos/benchmark-db2.json
+
+
+6.  Drop database.
+-------------------
+
+db2 => list applications
+db2 => force application all
+db2 => deactivate database tpcc
+db2 => drop database tpcc
+
+
+6. Utils 
+----------
+$ db2 list database directory;

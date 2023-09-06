@@ -1,0 +1,66 @@
+1. download jdbc
+-----------------
+Download mssql jdbc driver from Microsoft, and extract mssql-jdbc-*.jar to lib directory.
+
+
+2. Create database tpcc
+------------------------
+$ sqlcmd -U sa -S 127.0.0.1
+1> use master;
+2> go
+1> create database tpcc;
+2> go
+1> select name from sys.databases;
+2> go
+
+1> use tpcc;
+2> create login tpcc_user with password='tpcc_passwd', default_database=tpcc;
+3> create user tpcc_user for login tpcc_user with default_schema=dbo;
+4> exec sp_addrolemember 'db_owner','tpcc_user';
+5> go
+
+
+3. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-mssql.json
+
+4. Run TPC-C benchmark.
+------------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-mssql.json
+
+5. (optional) Drop TPC-C tables and data.
+-----------------------------------------
+$ ./tpcc.sh drop ./demos/benchmark-mssql.json
+
+
+6. Drop database.
+-----------------
+$ sqlcmd -U sa -S 127.0.0.1 
+1> exec msdb.dbo.sp_delete_database_backuphistory @database_name='tpcc';
+2> go
+
+1> use master
+2> alter database tpcc set single_user with rollback immediate;
+3> go
+
+1> alter database tpcc set single_user;
+2> go
+
+1> drop database tpcc;
+2> go
+
+
+6. Utils 
+----------
+select
+    spid,
+	db_name(dbid) db_name,
+	hostname,
+	program_name,
+	login_time,
+	loginame ,
+	status
+from
+	sys.sysprocesses s
+where
+	db_name(dbid) = 'TPCC';

@@ -1,0 +1,22 @@
+{
+  "benchmark": {
+	"dbms": "SQLite",
+    "warehouses": "2",
+    "threads": "5",
+	"ramp-up": "6",
+    "runtime": "60",
+    "report-interval": "4",
+    "log-level": "info"
+  },
+  "connectionPool": {
+    //"jdbcUrl": "jdbc:sqlite:/data/sqlite3/tpcc.db",
+    "jdbcUrl": "jdbc:sqlite:D:\\Data\\sqlit3\\tpcc.db",
+    "maximumPoolSize": "1"
+  },
+  "dataSource": {
+  	"journal_mode": "WAL",
+  	"wal_autocheckpoint": "6000",
+  	"synchronous": "NORMAL",
+  	"cache_size": "8000"
+  }
+}

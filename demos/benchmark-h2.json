@@ -1,0 +1,18 @@
+{
+  "benchmark": {
+	"dbms": "H2",
+    "warehouses": "2",
+    "threads": "5",
+	"ramp-up": "0",
+    "runtime": "20",
+    "report-interval": "2",
+    "log-level": "info"
+  },
+  "connectionPool": {
+    "jdbcUrl": "jdbc:h2:tcp://127.0.0.1:9092//data/h2/tpcc",
+	//"username": "tpcc",
+	//"password": "tpcc_passwd",
+    "maximumPoolSize": "5"
+  },
+  "dataSource": {}
+}

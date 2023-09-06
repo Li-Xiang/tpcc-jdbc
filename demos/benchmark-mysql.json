@@ -1,0 +1,32 @@
+{
+  "benchmark": {
+    "dbms": "MySQL",
+    "warehouses": "5",
+    "threads": "5",
+    "ramp-up": "6",
+    "runtime": "60",
+    "report-interval": "4",
+    "log-level": "info"
+  },
+  "connectionPool": {
+    "jdbcUrl": "jdbc:mysql://127.0.0.1:3306/tpcc",
+    "username": "tpcc_user",
+    "password": "tpcc_passwd",
+    "maximumPoolSize": "10"
+  },
+  "dataSource": {
+    "characterEncoding": "UTF-8",
+    "useSSL": "false",
+    "autoReconnect": "true",
+    "rewriteBatchedStatements": "true",
+    "elideSetAutoCommits": "true",
+    "cachePrepStmts": "true",
+    "prepStmtCacheSize": "250",
+    "prepStmtCacheSqlLimit": "2048",
+    "cacheResultSetMetadata": "true",
+    "maintainTimeStats": "false",
+    "useLocalSessionState": "true",
+    "cacheServerConfiguration": "true",
+    "useServerPrepStmts": "true"
+  }
+}

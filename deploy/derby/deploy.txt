@@ -1,0 +1,50 @@
+1. download jdbc
+----------------
+Download derby jdbc driver(http://db.apache.org/derby/derby_downloads.html), and extract derbyclient.jar to lib directory.
+
+2. create tpcc database
+-------------------------
+2.1. start derby in Network mode. 
+# For Linux/Unix 
+export DERBY_OPTS=""
+export DERBY_OPTS="$DERBY_OPTS -Dderby.drda.host=0.0.0.0"
+export DERBY_OPTS="$DERBY_OPTS -Dderby.drda.portNumber=1527"
+export DERBY_OPTS="$DERBY_OPTS -Dderby.system.home=/data/derby"  # --> your database storage path
+export DERBY_OPTS="$DERBY_OPTS -Dderby.stream.error.logSeverityLevel=0"
+startNetworkServer -noSecurityManager
+
+# For Windows
+set DERBY_OPTS=-Dderby.drda.host=0.0.0.0
+set DERBY_OPTS=%DERBY_OPTS% -Dderby.drda.portNumber=1527
+set DERBY_OPTS=%DERBY_OPTS% -Dderby.system.home=D:/Data/derby/
+set DERBY_OPTS=%DERBY_OPTS% -Dderby.stream.error.logSeverityLevel=0
+startNetworkServer -noSecurityManager
+
+2.2. create database and user.
+
+$ ij
+ij> connect 'jdbc:derby://127.0.0.1:1527/tpcc;create=true;territory=en_US;collation=TERRITORY_BASED';
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.defaultConnectionMode','noAccess');
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.connection.requireAuthentication','true');
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.authentication.provider','BUILTIN');
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.user.tpcc_user', 'tpcc_passwd');    
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.fullAccessUsers', 'tpcc_user');
+ij> CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.sqlAuthorization','true')
+ij> create schema authorization tpcc_user;
+
+
+3. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-derby.json
+
+4. Run TPC-C benchmark.
+------------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-derby.json
+
+5. (optional) Drop TPC-C tables and data.
+-----------------------------------------
+$ ./tpcc.sh drop ./demos/benchmark-derby.json
+
+6. Drop database.
+-----------------
+Stop derby server and drop database's directory by OS command.

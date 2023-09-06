@@ -1,0 +1,39 @@
+1. download jdbc
+-----------------
+Download postgres jdbc driver(https://jdbc.postgresql.org/), and extract postgresql-*.jar to lib directory.
+
+2. Create database tpcc
+-----------------------
+$ psql
+
+postgres=# create user tpcc_user with password 'tpcc_passwd';
+postgres=# create database tpcc with owner='tpcc_user' encoding='UTF8';
+postgres=# \c tpcc
+tpcc=# grant all privileges on database tpcc to tpcc_user;
+tpcc=# grant all privileges on all tables in schema public to tpcc_user;
+
+3. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-pgsql.json
+
+4. Run TPC-C benchmark.
+-----------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-pgsql.json
+
+5. (optional) Drop TPC-C tables and data.
+-----------------------------------------
+$ ./tpcc.sh drop ./demos/benchmark-pgsql.json
+
+6. Drop database.
+-------------------
+$ psql
+postgres=# drop database tpcc;
+
+
+6. Utils 
+-------- 
+If PostgreSQL < 9.2
+SELECT pg_terminate_backend(procpid) FROM pg_stat_activity WHERE datname = 'tpcc';
+
+Else
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'tpcc';

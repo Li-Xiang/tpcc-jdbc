@@ -1,0 +1,24 @@
+tpcc-jdbc
+Copyright 2022 Li Xiang
+
+This software bundles the following NOTICE files from third party library providers:
+
+'Gson':
+  * LICENSE:  Apache License 2.0
+  * HOMEPAGE: https://github.com/google/gson
+
+'Guava':
+  * LICENSE:  Apache License 2.0
+  * HOMEPAGE: https://github.com/google/guava
+ 
+ 'HikariCP':
+   * LICENSE:  Apache License 2.0
+   * HOMEPAGE: https://github.com/brettwooldridge/HikariCP
+   
+ 'SLF4J':
+  * LICENSE:  MIT license
+  * HOMEPAGE: https://www.slf4j.org/
+  
+'Apache Log4j 2':
+  * LICENSE:  Apache License 2.0
+  * HOMEPAGE: https://logging.apache.org/log4j/2.x/

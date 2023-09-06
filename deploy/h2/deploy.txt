@@ -1,0 +1,23 @@
+1. download jdbc
+----------------
+Download H2 jdbc driver(http://h2database.com/html/download.html), and extract h2-*.jar to lib directory.
+
+2. 2. Start database server
+------------------------------
+java -cp "/usr/local/h2/bin/h2-{version}.jar" org.h2.tools.Server -tcp -tcpAllowOthers -ifNotExists
+
+3. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-h2.json
+
+4. Run TPC-C benchmark.
+------------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-h2.json
+
+5. (optional) Drop TPC-C tables and data.
+-----------------------------------------
+$ ./tpcc.sh drop ./demos/benchmark-mssql.json
+
+6. Drop database.
+-----------------
+Stop H2 Server and drop tpcc datafile by using OS remove command.

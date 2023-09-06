@@ -8,7 +8,7 @@ TPC-C for JDBC is a TPC-C benchmark (workload generator)  base on Java JDBC.
 
 ### Install
 
-Download the pre-built binary here(https://github.com/Li-Xiang/tpcc-jdbc/tags) and then unzip it. it requires minimum of Java 11 at runtime.
+Download the pre-built binary here([https://github.com/Li-Xiang/tpcc-jdbc/releases](https://github.com/Li-Xiang/tpcc-jdbc/releases)) and then unzip it. it requires minimum of Java 11 at runtime.
 
 ### Usage
 ```

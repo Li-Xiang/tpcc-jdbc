@@ -3,7 +3,7 @@
     "dbms": "MySQL",
     "warehouses": "5",
     "threads": "5",
-    "ramp-up": "6",
+    "ramp-up": "20",
     "runtime": "60",
     "report-interval": "4",
     "log-level": "info"

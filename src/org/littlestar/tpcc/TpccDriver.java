@@ -1,8 +1,6 @@
 package org.littlestar.tpcc;
 
 import java.sql.Connection;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -32,12 +30,12 @@ public class TpccDriver implements TpccConstants {
 		this.dataSource = ds;
 		this.dbms = dbms;
 		this.wareCount = wareCount;
-		
 	}
 	
 	public static AtomicBoolean transactionOn = new AtomicBoolean(true);
 	public static AtomicBoolean countingOn = new AtomicBoolean(false);
-	private LocalDateTime benchCountingEndTime;
+	//private LocalDateTime benchCountingEndTime;
+	private long benchCountingEndTime;
 	public void benchmark(int runTime, int rampUp, int reportPeriod, int threads) throws Exception {
 		ThreadFactory benchmarkFactory = new ThreadFactoryBuilder().setNameFormat("tpcc-benchmark-pool-%d").build();
 		ThreadPoolExecutor benchmarkExecutor = new ThreadPoolExecutor(threads, threads, 0L, TimeUnit.MILLISECONDS,
@@ -62,27 +60,26 @@ public class TpccDriver implements TpccConstants {
 		}
 		
 		countingOn.set(true); // 开启事务计数器
-		LocalDateTime benchCountingBeginTime = LocalDateTime.now();
+		//LocalDateTime benchCountingBeginTime = LocalDateTime.now();
+		long benchCountingBeginTime = System.currentTimeMillis();
 		////// 2 scheduled threads: one for interval output, other one for stop benchmark threads when run-time reached.
 		monitorExecutor.schedule(() -> {
 			transactionOn.set(false);
 			countingOn.set(false);
 			benchmarkExecutor.shutdown();
 			monitorExecutor.shutdown();
-			benchCountingEndTime = LocalDateTime.now();
+			benchCountingEndTime = System.currentTimeMillis();
 		}, runTime, TimeUnit.SECONDS);
 		monitorExecutor.scheduleAtFixedRate(new BenchmarkReporter(benchmarkThreads), reportPeriod, reportPeriod,
 				TimeUnit.SECONDS);
 		BenchmarkReporter.reportHeader();
 		
-		///// 等待benchmark线程池中的线程都退出后, 打印测试汇总。
+		///// 等待benchmark线程池中的线程都退出后, 打印测试汇总。 runTime + 10秒后超时
 		if (!benchmarkExecutor.awaitTermination(runTime + 10, TimeUnit.SECONDS)) {
-			LOGGER.trace("Benchmark threads still active [ count="+benchmarkExecutor.getActiveCount()+" ] when runtime is arrived, force shutdown benchmark threads pool.");
+			LOGGER.trace("Benchmark threads still active [ count=" + benchmarkExecutor.getActiveCount() + " ] when runtime is arrived, force shutdown benchmark threads pool.");
 			benchmarkExecutor.shutdownNow();
 		}
-		Duration duration = Duration.between(benchCountingBeginTime, benchCountingEndTime);
-		long realRuntime = duration.toMillis();
-		
+		long realRuntime = benchCountingEndTime - benchCountingBeginTime;
 		BenchmarkReporter.reportFooter(benchmarkThreads, realRuntime);
 	}
 	
@@ -257,6 +254,12 @@ public class TpccDriver implements TpccConstants {
 		}
 	}
 	
+	/*
+	 * Benchmark        Mode  Cnt  Score    Error  Units
+	 * JMH01.duration2  avgt    4  0.006 ±  0.001  us/op ==> System.currentTimeMillis()
+	 * JMH01.duration3  avgt    4  0.125 ±  0.011  us/op ==> LocalDateTime.now() + Duration
+	 */
+	
 	/**
 	 * 2.4	The New-Order Transaction -> 2.4.1 Input Data Generation
 	 */
@@ -289,7 +292,7 @@ public class TpccDriver implements TpccConstants {
 		boolean success = false;
 		long runTime = 0L;
 		int retry = 0;
-		LocalDateTime beginTime = LocalDateTime.now();
+		long startTime = System.currentTimeMillis();
 		for (; retry < MAX_RETRY; retry++) {
 			try (Connection connection = dataSource.getConnection()) {
 				success = TpccTransaction.newOrder(connection, dbms, w_id, d_id, c_id, ol_cnt, o_all_local, itemid, supware, qty);
@@ -304,14 +307,12 @@ public class TpccDriver implements TpccConstants {
 				LOGGER.trace("New-order transaction failed. Retries (" + retry + ")", e);
 			}
 		}
-		LocalDateTime endTime = LocalDateTime.now();
-		Duration duration = Duration.between(beginTime, endTime);
-		runTime = duration.toMillis();
+		long endTime = System.currentTimeMillis();
+		runTime = endTime - startTime;
 		TransactionStatistics transStat = new TransactionStatistics(TransactionType.NewOrder, success, runTime, retry);
 		LOGGER.trace("transaction done: " + transStat.toString());
 		return transStat;
 	}
-	
 	
 	/**
 	 * 2.5 The Payment Transaction -> 2.5.1 Input Data Generation
@@ -340,7 +341,7 @@ public class TpccDriver implements TpccConstants {
 		boolean success = false;
 		long runTime = 0L;
 		int retry = 0;
-		LocalDateTime beginTime = LocalDateTime.now();
+		long startTime = System.currentTimeMillis();
 		for (; retry < MAX_RETRY; retry++) {
 			try (Connection connection = dataSource.getConnection()) {
 				success = TpccTransaction.payment(connection, dbms, w_id, d_id, byname, c_w_id, c_d_id, c_id, c_last, h_amount);
@@ -354,9 +355,8 @@ public class TpccDriver implements TpccConstants {
 				LOGGER.trace("Payment transaction failed. Retries (" + retry + ")", e);
 			}
 		}
-		LocalDateTime endTime = LocalDateTime.now();
-		Duration duration = Duration.between(beginTime, endTime);
-		runTime = duration.toMillis();
+		long endTime = System.currentTimeMillis();
+		runTime = endTime - startTime;
 		TransactionStatistics transStat = new TransactionStatistics(TransactionType.Payment, success, runTime, retry);
 		LOGGER.trace("transaction done: " + transStat.toString());
 		return transStat;
@@ -380,7 +380,7 @@ public class TpccDriver implements TpccConstants {
 		boolean success = false;
 		long runTime = 0L;
 		int retry = 0;
-		LocalDateTime beginTime = LocalDateTime.now();
+		long startTime = System.currentTimeMillis();
 		for (; retry < MAX_RETRY; retry++) {
 			try (Connection connection = dataSource.getConnection()) {
 				success = TpccTransaction.ordstat(connection, dbms, w_id, d_id, byname, c_id, c_last);
@@ -394,9 +394,8 @@ public class TpccDriver implements TpccConstants {
 				LOGGER.trace("Order-Status transaction failed. Retries (" + retry + ")", e);
 			}
 		}
-		LocalDateTime endTime = LocalDateTime.now();
-		Duration duration = Duration.between(beginTime, endTime);
-		runTime = duration.toMillis();
+		long endTime = System.currentTimeMillis();
+		runTime = endTime - startTime;
 		TransactionStatistics transStat = new TransactionStatistics(TransactionType.OrderStatus, success, runTime, retry);
 		LOGGER.trace("transaction done: " + transStat.toString());
 		return transStat;
@@ -412,7 +411,7 @@ public class TpccDriver implements TpccConstants {
 		boolean success = false;
 		long runTime = 0L;
 		int retry = 0;
-		LocalDateTime beginTime = LocalDateTime.now();
+		long startTime = System.currentTimeMillis();
 		for (; retry < MAX_RETRY; retry++) {
 			try (Connection connection = dataSource.getConnection()) {
 				success = TpccTransaction.delivery(connection, dbms, w_id, o_carrier_id);
@@ -426,9 +425,8 @@ public class TpccDriver implements TpccConstants {
 				LOGGER.trace("Delivery transaction failed. Retries (" + retry + ")", e);
 			}
 		}
-		LocalDateTime endTime = LocalDateTime.now();
-		Duration duration = Duration.between(beginTime, endTime);
-		runTime = duration.toMillis();
+		long endTime = System.currentTimeMillis();
+		runTime = endTime - startTime;
 		TransactionStatistics transStat = new TransactionStatistics(TransactionType.Delivery, success, runTime, retry);
 		LOGGER.trace("transaction done: " + transStat.toString());
 		return transStat;
@@ -445,7 +443,7 @@ public class TpccDriver implements TpccConstants {
 		boolean success = false;
 		long runTime = 0L;
 		int retry = 0;
-		LocalDateTime beginTime = LocalDateTime.now();
+		long startTime = System.currentTimeMillis();
 		for (; retry < MAX_RETRY; retry++) {
 			try (Connection connection = dataSource.getConnection()) {
 				success = TpccTransaction.slev(connection, dbms, w_id, d_id, level);
@@ -459,9 +457,8 @@ public class TpccDriver implements TpccConstants {
 				LOGGER.trace("Stock-Level transaction failed. Retries (" + retry + ")", e);
 			}
 		}
-		LocalDateTime endTime = LocalDateTime.now();
-		Duration duration = Duration.between(beginTime, endTime);
-		runTime = duration.toMillis();
+		long endTime = System.currentTimeMillis();
+		runTime = endTime - startTime;
 		TransactionStatistics transStat = new TransactionStatistics(TransactionType.StockLevel, success, runTime, retry);
 		LOGGER.trace("transaction done: " + transStat.toString());
 		return transStat;

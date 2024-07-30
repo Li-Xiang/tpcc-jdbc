@@ -5,8 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.time.LocalDateTime;
 import java.util.BitSet;
+
+import static org.littlestar.tpcc.RandomHelper.*;
+import static org.littlestar.tpcc.TpccTransaction.getNow;
 
 public final class TpccLoad implements TpccConstants {
 
@@ -43,16 +45,16 @@ public final class TpccLoad implements TpccConstants {
 		long rows = 0l;
 		// 创建一个包含10%行数随机置位的位图, 置位的索引对应的行的'i_idata'字段, 需要在随机位置包含"original"字符串。
 		// 和参考实现的思路是相似的，只不过参考实现使用的是一个整型数值实现的位图.
-		BitSet origBitmap = RandomHelper.randomBitMap(MAX_ITEMS / 10, MAX_ITEMS);
+		BitSet origBitmap = randomBitMap(MAX_ITEMS / 10, MAX_ITEMS);
 		try {
 			PreparedStatement stmt = connection.prepareStatement(sqlText);
 			for (i_id = 1; i_id <= MAX_ITEMS; i_id++) {
-				i_im_id = RandomHelper.randomInt(1, 10000);
-				i_name = RandomHelper.randomString(14, 24);
-				i_price = RandomHelper.randomDecimal(2, 1.00, 100.00);
-				i_data = RandomHelper.randomString(26, 50);
+				i_im_id = randomInt(1, 10000);
+				i_name = randomString(14, 24);
+				i_price = randomDecimal(2, 1.00, 100.00).doubleValue();
+				i_data = randomString(26, 50);
 				if (origBitmap.get(i_id - 1)) { // 通过替换方式, 实现随机位置包含"original"。
-					int pos = RandomHelper.randomInt(0, i_data.length() - 8); // "original".length() => 8
+					int pos = randomInt(0, i_data.length() - 8); // "original".length() => 8
 					i_data = replaceString(i_data, pos, "original");
 				}
 				stmt.setInt(1, i_id);
@@ -135,13 +137,13 @@ public final class TpccLoad implements TpccConstants {
 		try {
 			PreparedStatement stmt = connection.prepareStatement(sqlText);
 			for (; w_id <= wareCount; w_id++) {
-				w_name = RandomHelper.randomString(6, 10);
-				w_street_1 = RandomHelper.randomString(10, 20);
-				w_street_2 = RandomHelper.randomString(10, 20);
-				w_city = RandomHelper.randomString(10, 20);
-				w_state = RandomHelper.randomString(2);
-				w_zip = RandomHelper.randomNumberString(9); //这里没有实现TPC-C 4.3.2.7的定义, 仅为定长数字类型字符串;
-				w_tax = RandomHelper.randomDecimal(4, 0.0000 , 0.2001);
+				w_name = randomString(6, 10);
+				w_street_1 = randomString(10, 20);
+				w_street_2 = randomString(10, 20);
+				w_city = randomString(10, 20);
+				w_state = randomString(2);
+				w_zip = randomNumberString(9); //这里没有实现TPC-C 4.3.2.7的定义, 仅为定长数字类型字符串;
+				w_tax = randomDecimal(4, 0.0000 , 0.2001).doubleValue();
 				w_ytd = 300000.00D;
 				stmt.setInt(1, w_id);
 				stmt.setString(2, w_name);
@@ -215,26 +217,26 @@ public final class TpccLoad implements TpccConstants {
 		int s_order_cnt = 0;
 		int s_remote_cnt = 0;
 		String s_data;
-		BitSet origBitmap = RandomHelper.randomBitMap(MAX_ITEMS / 10, MAX_ITEMS);
+		BitSet origBitmap = randomBitMap(MAX_ITEMS / 10, MAX_ITEMS);
 		String sqlText = TpccStatements.insertStockSQL(dbms);
 		long rows = 0l;
 		try {
 			PreparedStatement stmt = connection.prepareStatement(sqlText);
 			for (s_i_id = 1; s_i_id <= MAX_ITEMS; s_i_id++) {
-				s_quantity = RandomHelper.randomInt(10, 100);
-				s_dist_01 = RandomHelper.randomString(24);
-				s_dist_02 = RandomHelper.randomString(24);
-				s_dist_03 = RandomHelper.randomString(24);
-				s_dist_04 = RandomHelper.randomString(24);
-				s_dist_05 = RandomHelper.randomString(24);
-				s_dist_06 = RandomHelper.randomString(24);
-				s_dist_07 = RandomHelper.randomString(24);
-				s_dist_08 = RandomHelper.randomString(24);
-				s_dist_09 = RandomHelper.randomString(24);
-				s_dist_10 = RandomHelper.randomString(24);
-				s_data = RandomHelper.randomString(26, 50);
+				s_quantity = randomInt(10, 100);
+				s_dist_01 = randomString(24);
+				s_dist_02 = randomString(24);
+				s_dist_03 = randomString(24);
+				s_dist_04 = randomString(24);
+				s_dist_05 = randomString(24);
+				s_dist_06 = randomString(24);
+				s_dist_07 = randomString(24);
+				s_dist_08 = randomString(24);
+				s_dist_09 = randomString(24);
+				s_dist_10 = randomString(24);
+				s_data = randomString(26, 50);
 				if (origBitmap.get(s_i_id - 1)) {
-					int pos = RandomHelper.randomInt(0, s_data.length() - 8); 
+					int pos = randomInt(0, s_data.length() - 8); 
 					s_data = replaceString(s_data, pos, "original");
 				}
 				stmt.setInt(1, s_i_id);
@@ -312,13 +314,13 @@ public final class TpccLoad implements TpccConstants {
 		try {
 			final PreparedStatement stmt = connection.prepareStatement(sqlText);
 			for (d_id = 1; d_id <= DIST_PER_WARE; d_id++) {
-				d_name = RandomHelper.randomString(6, 10);
-				d_street_1 = RandomHelper.randomString(10, 20);
-				d_street_2 = RandomHelper.randomString(10, 20);
-				d_city = RandomHelper.randomString(10, 20);
-				d_state = RandomHelper.randomString(2);
-				d_zip = RandomHelper.randomNumberString(9);
-				d_tax = RandomHelper.randomDecimal(4, 0.0000, 0.2001);
+				d_name = randomString(6, 10);
+				d_street_1 = randomString(10, 20);
+				d_street_2 = randomString(10, 20);
+				d_city = randomString(10, 20);
+				d_state = randomString(2);
+				d_zip = randomNumberString(9);
+				d_tax = randomDecimal(4, 0.0000, 0.2001).doubleValue();
 				stmt.setInt(1, d_id);
 				stmt.setInt(2, d_w_id);
 				stmt.setString(3, d_name);
@@ -446,31 +448,31 @@ public final class TpccLoad implements TpccConstants {
 			final PreparedStatement stmt1 = connection.prepareStatement(sqlText1);
 			final PreparedStatement stmt2 = connection.prepareStatement(sqlText2);
 			for (; c_id <= CUST_PER_DIST; c_id++) {
-				c_first = RandomHelper.randomString(8, 16);
+				c_first = randomString(8, 16);
 				// c_last
 				if (c_id <= 1000) {
-					c_last = RandomHelper.lastName(c_id - 1);
+					c_last = lastName(c_id - 1);
 				} else {
-					c_last = RandomHelper.lastName(RandomHelper.nuRand(255, 0, 999));
+					c_last = lastName(nuRand(255, 0, 999));
 				}
 				
-				c_street_1 = RandomHelper.randomString(10, 20);
-				c_street_2 = RandomHelper.randomString(10, 20);
-				c_city = RandomHelper.randomString(10, 20);
-				c_state = RandomHelper.randomString(2);
-				c_zip = RandomHelper.randomNumberString(9);
-				c_phone = RandomHelper.randomNumberString(16);
+				c_street_1 = randomString(10, 20);
+				c_street_2 = randomString(10, 20);
+				c_city = randomString(10, 20);
+				c_state = randomString(2);
+				c_zip = randomNumberString(9);
+				c_phone = randomNumberString(16);
 				c_since = getNow();
 				
 				// c_credit
-				if (RandomHelper.randomBoolean()) {
+				if (randomBoolean()) {
 					c_credit = "BC";
 				} else {
 					c_credit = "GC";
 				}
 				
-				c_discount = RandomHelper.randomDecimal(4, 0.0000, 0.5001);
-				c_data = RandomHelper.randomString(300, 500);
+				c_discount = randomDecimal(4, 0.0000, 0.5001).doubleValue();
+				c_data = randomString(300, 500);
 				
 				stmt1.setInt(1, c_id);
 				stmt1.setInt(2, c_d_id);
@@ -503,7 +505,7 @@ public final class TpccLoad implements TpccConstants {
 				h_w_id = w_id;
 				h_date = getNow();
 				h_amount = 10.00D;
-				h_data = RandomHelper.randomString(12, 24);
+				h_data = randomString(12, 24);
 				stmt2.setInt(1, h_c_id);
 				stmt2.setInt(2, h_c_d_id);
 				stmt2.setInt(3, h_c_w_id);
@@ -611,7 +613,7 @@ public final class TpccLoad implements TpccConstants {
 		Integer o_carrier_id;
 		int o_ol_cnt;
 		int o_all_local = 1;
-		int[] nums = RandomHelper.randomPermutation(ORD_PER_DIST);
+		int[] nums = randomPermutation(ORD_PER_DIST);
 		
 		int no_o_id ;
 		int no_d_id = d_id;
@@ -629,7 +631,7 @@ public final class TpccLoad implements TpccConstants {
 			for (o_id = 1; o_id <= ORD_PER_DIST; o_id++) {
 				o_c_id = nums[o_id - 1]; // array 's index start with 0
 				o_entry_d = getNow();
-				o_ol_cnt = RandomHelper.randomInt(5, 15);
+				o_ol_cnt = randomInt(5, 15);
 				o_all_local = 1;
 				//
 				if (o_id > 2100) { // the last 900 orders have not been delivered, o_carrier_id = null;
@@ -642,7 +644,7 @@ public final class TpccLoad implements TpccConstants {
 					stmt2.addBatch();
 					rows ++;
 				} else {
-					o_carrier_id = RandomHelper.randomInt(1, 10);
+					o_carrier_id = randomInt(1, 10);
 					stmt1.setInt(6, o_carrier_id);
 				}
 				
@@ -670,13 +672,13 @@ public final class TpccLoad implements TpccConstants {
 				String ol_dist_info;
 				
 				for (ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
-					ol_i_id= RandomHelper.randomInt(1, MAX_ITEMS);
-					ol_dist_info = RandomHelper.randomString(24);
+					ol_i_id= randomInt(1, MAX_ITEMS);
+					ol_dist_info = randomString(24);
 					// OL_DELIVERY_D = O_ENTRY_D if OL_O_ID < 2,101,  null otherwise;
 					// OL_AMOUNT = 0.00 if OL_O_ID < 2,101, random within [0.01 .. 9,999.99] otherwise;
 					if (ol_o_id > 2100) {
 						stmt3.setNull(7, Types.TIMESTAMP);
-						ol_amount = RandomHelper.randomDecimal(2, 0.01, 100.00);
+						ol_amount = randomDecimal(2, 0.01, 100.00).doubleValue();
 					} else {
 						ol_delivery_d = getNow();
 						stmt3.setTimestamp(7, ol_delivery_d);
@@ -719,9 +721,4 @@ public final class TpccLoad implements TpccConstants {
 		stmt.close();
 		return rows;
 	}
-	
-	private static Timestamp getNow() {
-		return Timestamp.valueOf(LocalDateTime.now());
-	}
-
 }

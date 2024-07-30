@@ -1,0 +1,19 @@
+{
+  "benchmark": {
+	"dbms": "DM",
+    "warehouses": "5",
+    "threads": "5",
+	"ramp-up": "10",
+    "runtime": "20",
+    "report-interval": "2",
+    "log-level": "info"
+  },
+  "connectionPool": {
+    "jdbcUrl": "jdbc:dm://172.21.79.185:5236?schema=TPCC",
+	"username": "tpcc_user",
+	"password": "tpcc_passwd",
+    "maximumPoolSize": "5"
+  },
+  "dataSource": {
+  }
+}

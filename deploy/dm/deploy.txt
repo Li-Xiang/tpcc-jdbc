@@ -1,0 +1,33 @@
+1. download jdbc
+----------------
+Download dameng jdbc driver(https://eco.dameng.com/download/), and extract DmJdbcDriver18.jar to lib directory.
+
+2. Create user and tablespace for tpcc
+--------------------------------------
+$ cd /home/dmdba/dmdbms/bin; ./disql sysdba@localhost
+
+SQL> CREATE TABLESPACE tpcc DATAFILE 'TPCC01.DBF' SIZE 512 AUTOEXTEND ON MAXSIZE 32768;
+SQL> CREATE USER tpcc_user IDENTIFIED BY "tpcc_passwd" PASSWORD_POLICY 0 DEFAULT TABLESPACE tpcc DEFAULT INDEX TABLESPACE tpcc;
+SQL> GRANT create session TO tpcc_user;
+SQL> GRANT public TO tpcc_user;
+SQL> GRANT resource TO tpcc_user;
+SQL> GRANT EXECUTE ON DBMS_STATS TO tpcc_user;
+SQL> CREATE SCHEMA tpcc AUTHORIZATION tpcc_user;
+
+注意, 模式名区分大小写。
+
+3. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-mysql.json
+
+4. Run TPC-C benchmark.
+------------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-mysql.json
+
+5. (optional) Drop TPC-C tables and data.
+-----------------------------------------
+$ ./tpcc.sh drop ./demos/benchmark-mysql.json
+
+6. Drop database.
+-----------------
+SQL> drop user tpcc_user cascade;

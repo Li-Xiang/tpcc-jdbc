@@ -1,32 +1,21 @@
 package org.littlestar.tpcc;
 
-import java.util.Objects;
-
 public class Benchmark {
-
+	public static final String BENCHMARK_COMMAND = "benchmark";
+	public static final String LOAD_COMMAND = "load";
+	public static final String CHECK_COMMAND = "check";
+	public static final String DROP_COMMAND = "drop";
+	public static final String ADDFK_COMMAND = "addfk";
+	public static final String DROPFK_COMMAND = "dropfk";
+	public static final String GATHERSTATS_COMMAND = "gather";
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
 			throw new IllegalArgumentException(
-					"usage: org.littlestar.tpcc.Benchmark {benchmark-config-file} {benchmark|load|drop|addfk|dropfk|check}");
+					"usage: org.littlestar.tpcc.Benchmark {benchmark-config-file} {benchmark|load|drop|addfk|dropfk|check|gather}");
 		} else {
 			String configFile = args[0];
-			BenchmarkBuilder builder = new BenchmarkBuilder(configFile);
 			String command = args[1];
-			if (Objects.equals(command, "benchmark")) {
-				builder.doBenchmark();
-			} else if (Objects.equals(command, "load")) {
-				builder.doLoad(true, true);
-			} else if (Objects.equals(command, "check")) {
-				builder.doCheck();
-			} else if (Objects.equals(command, "drop")) {
-				builder.doDrop();
-			} else if (Objects.equals(command, "addfk")) {
-				builder.doAddFk();
-			} else if (Objects.equals(command, "dropfk")) {
-				builder.doDropFk();
-			} else {
-				throw new IllegalArgumentException("command only accept: {benchmark|load|drop|check}");
-			}
+			new BenchmarkBuilder(configFile).execute(command);
 		}
 	}
 }

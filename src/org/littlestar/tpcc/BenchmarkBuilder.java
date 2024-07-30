@@ -14,9 +14,7 @@ import org.apache.logging.log4j.Level;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-
 public class BenchmarkBuilder {
-	//private final static Logger LOGGER = LoggerFactory.getLogger(BenchmarkBuilder.class);
 	private BenchmarkConfig benchmarkConfig;
 	public BenchmarkBuilder() {
 		benchmarkConfig = new BenchmarkConfig();
@@ -48,49 +46,13 @@ public class BenchmarkBuilder {
 		return this;
 	}
 	
-	public void doLoad(boolean withFk, boolean withCheck) throws Exception {
+	public void execute(String command) throws Exception {
 		Dbms dbms = benchmarkConfig.getDbms();
 		int wareCount = benchmarkConfig.getWarehouses();
 		int threads = benchmarkConfig.getThreads();
 		Level logLevel = benchmarkConfig.getLogLevel();
-		Log4jInitializer.initialize(logLevel)
-			.withConsoleAppender(Level.ALL)
-			.withLevel("com.zaxxer.hikari",Level.ERROR);
-		Properties cpProfile = benchmarkConfig.getConnectionPoolProfile();
-		Properties dsProfile = benchmarkConfig.getDataSourceProfile();
-		TpccDataSource ds = null;
-		try {
-			if (cpProfile.isEmpty()) {
-				if (dsProfile.containsKey("url") && dsProfile.containsKey("url")) {
-					String url = dsProfile.getProperty("url");
-					String driver = dsProfile.getProperty("driver");
-					ds = new NonPoolDataSource(url, driver);
-				} else {
-					throw new Exception("Missing url and driver parameters");
-				}
-			} else {
-				ds = new HikariCPBuilder().withHikariProperties(cpProfile).withDataSourceProperties(dsProfile)
-						.createDataSource();
-			}
-			TpccLoader loader = new TpccLoader(ds, dbms, wareCount, threads);
-			loader.createTpccTables();
-			loader.doLoad();
-			loader.doAddFksAndIndexes(withFk);
-			if (withCheck) {
-				loader.checkTableRows();
-			}
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			ds.close();
-		}
-	}
-	
-	public void doBenchmark() throws Exception {
-		Level logLevel = benchmarkConfig.getLogLevel();
-		Log4jInitializer.initialize(logLevel)
-			.withConsoleAppender(Level.ALL)
-			.withLevel("com.zaxxer.hikari",Level.ERROR);
+		Log4jInitializer.initialize(logLevel).withConsoleAppender(Level.ALL).withLevel("com.zaxxer.hikari",
+				Level.ERROR);
 		Properties cpProfile = benchmarkConfig.getConnectionPoolProfile();
 		Properties dsProfile = benchmarkConfig.getDataSourceProfile();
 		TpccDataSource ds = null;
@@ -108,143 +70,34 @@ public class BenchmarkBuilder {
 						.createDataSource();
 			}
 
-			Dbms dbms = benchmarkConfig.getDbms();
-			int wareCount = benchmarkConfig.getWarehouses();
-			int threads = benchmarkConfig.getThreads();
-			int runTime = benchmarkConfig.getRunTime();
-			int rampUp = benchmarkConfig.getRampUp();
-			int reportInterval = benchmarkConfig.getReportInterval();
-			TpccDriver tpccDriver = new TpccDriver(ds, dbms, wareCount);
-			tpccDriver.benchmark(runTime, rampUp, reportInterval, threads);
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			if (Objects.nonNull(ds))
-				ds.close();
-		}
-	}
-	
-	public void doCheck() throws Exception {
-		Dbms dbms = benchmarkConfig.getDbms();
-		int wareCount = benchmarkConfig.getWarehouses();
-		int threads = benchmarkConfig.getThreads();
-		Level logLevel = benchmarkConfig.getLogLevel();
-		Log4jInitializer.initialize(logLevel).withConsoleAppender(Level.ALL).withLevel("com.zaxxer.hikari",
-				Level.ERROR);
-		Properties cpProfile = benchmarkConfig.getConnectionPoolProfile();
-		Properties dsProfile = benchmarkConfig.getDataSourceProfile();
-		TpccDataSource ds = null;
-		try {
-			if (cpProfile.isEmpty()) {
-				if (dsProfile.containsKey("url") && dsProfile.containsKey("url")) {
-					String url = dsProfile.getProperty("url");
-					String driver = dsProfile.getProperty("driver");
-					ds = new NonPoolDataSource(url, driver);
-				} else {
-					throw new Exception("Missing url and driver parameters");
-				}
+			if (Objects.isNull(command)) {
+				throw new Exception("Command is null");
+			} else if (Objects.equals(command.toLowerCase(), Benchmark.LOAD_COMMAND)) {
+				TpccLoader loader = new TpccLoader(ds, dbms, wareCount, threads);
+				loader.createTpccTables();
+				loader.doLoad();
+				loader.doAddFksAndIndexes(true);
+				loader.doGatherStatistics();
+				loader.checkTableRows();
+			} else if (Objects.equals(command.toLowerCase(), Benchmark.ADDFK_COMMAND)) {
+				new TpccLoader(ds, dbms, wareCount, threads).doAddForeignKeys();
+			} else if (Objects.equals(command.toLowerCase(), Benchmark.DROPFK_COMMAND)) {
+				new TpccLoader(ds, dbms, wareCount, threads).doDropForeignKeys();
+			} else if (Objects.equals(command.toLowerCase(), Benchmark.GATHERSTATS_COMMAND)) {
+				new TpccLoader(ds, dbms, wareCount, threads).doGatherStatistics();
+			} else if (Objects.equals(command.toLowerCase(), Benchmark.CHECK_COMMAND)) {
+				new TpccLoader(ds, dbms, wareCount, threads).checkTableRows();
+			} else if (Objects.equals(command.toLowerCase(), Benchmark.BENCHMARK_COMMAND)) {
+				int runTime = benchmarkConfig.getRunTime();
+				int rampUp = benchmarkConfig.getRampUp();
+				int reportInterval = benchmarkConfig.getReportInterval();
+				TpccDriver tpccDriver = new TpccDriver(ds, dbms, wareCount);
+				tpccDriver.benchmark(runTime, rampUp, reportInterval, threads);
+			} else if (Objects.equals(command.toLowerCase(), Benchmark.DROP_COMMAND)) {
+				new TpccLoader(ds, dbms, wareCount, threads).doDropTables();
 			} else {
-				ds = new HikariCPBuilder().withHikariProperties(cpProfile).withDataSourceProperties(dsProfile)
-						.createDataSource();
+				throw new Exception("Unsupport command '" + command + "'");
 			}
-			TpccLoader loader = new TpccLoader(ds, dbms, wareCount, threads);
-			loader.checkTableRows();
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			ds.close();
-		}
-	}
-	
-	public void doDrop() throws Exception {
-		Dbms dbms = benchmarkConfig.getDbms();
-		int wareCount = benchmarkConfig.getWarehouses();
-		int threads = benchmarkConfig.getThreads();
-		Level logLevel = benchmarkConfig.getLogLevel();
-		Log4jInitializer.initialize(logLevel).withConsoleAppender(Level.ALL).withLevel("com.zaxxer.hikari",
-				Level.ERROR);
-		Properties cpProfile = benchmarkConfig.getConnectionPoolProfile();
-		Properties dsProfile = benchmarkConfig.getDataSourceProfile();
-		TpccDataSource ds = null;
-		try {
-			if (cpProfile.isEmpty()) {
-				if (dsProfile.containsKey("url") && dsProfile.containsKey("url")) {
-					String url = dsProfile.getProperty("url");
-					String driver = dsProfile.getProperty("driver");
-					ds = new NonPoolDataSource(url, driver);
-				} else {
-					throw new Exception("Missing url and driver parameters");
-				}
-			} else {
-				ds = new HikariCPBuilder().withHikariProperties(cpProfile).withDataSourceProperties(dsProfile)
-						.createDataSource();
-			}
-			TpccLoader loader = new TpccLoader(ds, dbms, wareCount, threads);
-			loader.doDropTables();
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			ds.close();
-		}
-	}
-	
-	public void doAddFk() throws Exception {
-		Dbms dbms = benchmarkConfig.getDbms();
-		int wareCount = benchmarkConfig.getWarehouses();
-		int threads = benchmarkConfig.getThreads();
-		Level logLevel = benchmarkConfig.getLogLevel();
-		Log4jInitializer.initialize(logLevel).withConsoleAppender(Level.ALL).withLevel("com.zaxxer.hikari",
-				Level.ERROR);
-		Properties cpProfile = benchmarkConfig.getConnectionPoolProfile();
-		Properties dsProfile = benchmarkConfig.getDataSourceProfile();
-		TpccDataSource ds = null;
-		try {
-			if (cpProfile.isEmpty()) {
-				if (dsProfile.containsKey("url") && dsProfile.containsKey("url")) {
-					String url = dsProfile.getProperty("url");
-					String driver = dsProfile.getProperty("driver");
-					ds = new NonPoolDataSource(url, driver);
-				} else {
-					throw new Exception("Missing url and driver parameters");
-				}
-			} else {
-				ds = new HikariCPBuilder().withHikariProperties(cpProfile).withDataSourceProperties(dsProfile)
-						.createDataSource();
-			}
-			TpccLoader loader = new TpccLoader(ds, dbms, wareCount, threads);
-			loader.doAddForeignKeys();
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			ds.close();
-		}
-	}
-	
-	public void doDropFk() throws Exception {
-		Dbms dbms = benchmarkConfig.getDbms();
-		int wareCount = benchmarkConfig.getWarehouses();
-		int threads = benchmarkConfig.getThreads();
-		Level logLevel = benchmarkConfig.getLogLevel();
-		Log4jInitializer.initialize(logLevel).withConsoleAppender(Level.ALL).withLevel("com.zaxxer.hikari",
-				Level.ERROR);
-		Properties cpProfile = benchmarkConfig.getConnectionPoolProfile();
-		Properties dsProfile = benchmarkConfig.getDataSourceProfile();
-		TpccDataSource ds = null;
-		try {
-			if (cpProfile.isEmpty()) {
-				if (dsProfile.containsKey("url") && dsProfile.containsKey("url")) {
-					String url = dsProfile.getProperty("url");
-					String driver = dsProfile.getProperty("driver");
-					ds = new NonPoolDataSource(url, driver);
-				} else {
-					throw new Exception("Missing url and driver parameters");
-				}
-			} else {
-				ds = new HikariCPBuilder().withHikariProperties(cpProfile).withDataSourceProperties(dsProfile)
-						.createDataSource();
-			}
-			TpccLoader loader = new TpccLoader(ds, dbms, wareCount, threads);
-			loader.doDropForeignKeys();
 		} catch (Exception e) {
 			throw e;
 		} finally {

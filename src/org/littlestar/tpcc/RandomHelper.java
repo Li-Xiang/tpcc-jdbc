@@ -52,51 +52,21 @@ public final class RandomHelper {
 	
 	/**
 	 * 
-	 * @param precision Total number of significant digits.
-	 * @param scale Number of digits to the right of the decimal point
+	 * @param precision the maximum number of digits
+	 * @param scale     the number of digits to the right of the decimal point
 	 * @return
-	 */
-	public static double randomDecimal(int precision, int scale) {
-		double bound = getBound(precision, scale);
-		double randD = randomDouble(bound);
+	 */ 
+	static BigDecimal randomDecimal(int precision, int scale) {
+		double randD = ThreadLocalRandom.current().nextDouble(0, Math.pow(10, precision - scale));
 		BigDecimal decimal = new BigDecimal(randD).setScale(scale, RoundingMode.HALF_UP);
-		return decimal.doubleValue();
+		return decimal;
 	}
 	
-	public static double randomDecimal(int scale, double min, double max) {
+	public static BigDecimal randomDecimal(int scale, double min, double max) {
 		double randD = randomDouble(min, max);
 		BigDecimal decimal = new BigDecimal(randD).setScale(scale, RoundingMode.HALF_UP);
-		return decimal.doubleValue();
-	}
-	
-	/**
-	 * 获取指定范围和精度的最大值, 笨办法, 构造字符串, 再转成双精。
-	 */
-	static double getBound(int precision, int scale) {
-		int lLen = precision - scale;
-		int rLen = scale;
-		String strBound;
-		StringBuilder lPart = new StringBuilder();
-		if (lLen < 0) {
-			throw new IllegalArgumentException(
-					"unexpected value: precision(" + precision + ") < scale(" + scale + ").");
-		} else if (lLen == 0) {
-			lPart.append("0");
-		} else {
-			for (int i = 0; i < lLen; i++) {
-				lPart.append("9");
-			}
-		}
-		if (rLen > 0) {
-			StringBuilder rPart = new StringBuilder();
-			for (int i = 0; i < rLen; i++) {
-				rPart.append("9");
-			}
-			strBound = lPart.toString() + "." + rPart.toString();
-		} else {
-			strBound = lPart.toString();
-		}
-		return Double.parseDouble(strBound);
+		// return decimal.doubleValue();
+		return decimal;
 	}
 	
 	public static float randomFloat() {

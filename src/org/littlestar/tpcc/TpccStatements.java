@@ -13,7 +13,8 @@ public final class TpccStatements {
 				"  i_im_id int," + 
 		        "  i_name varchar(24)," + 
 				"  i_price decimal(5,2), " + 
-		        "  i_data varchar(50) " + 
+		        "  i_data varchar(50), " + 
+		        "  constraint item_pk primary key(i_id)" + 
 				")";
 		String mysql = sqlText + " Engine=InnoDB";
 		String oracle = 
@@ -22,11 +23,13 @@ public final class TpccStatements {
 				"  i_im_id int, "+
 				"  i_name varchar2(24), "+
 				"  i_price decimal(5,2), "+
-				"  i_data varchar2(50) "+
+				"  i_data varchar2(50), "+
+				"  constraint item_pk primary key(i_id)" +
 				")";
 		switch(dbms){
 		case MySQL: return mysql;
 		case Oracle: return oracle;
+		case OB_Oracle: return oracle;
 		default: return sqlText;
 		}
 	}
@@ -42,7 +45,8 @@ public final class TpccStatements {
 				"  w_state char(2), "+ 
 				"  w_zip char(9), "+ 
 				"  w_tax decimal(4,4), "+ 
-				"  w_ytd decimal(12,2) "+
+				"  w_ytd decimal(12,2), "+
+				"  constraint warehouse_pk primary key(w_id)"+
 				")";
 		String mysql = sqlText + " Engine=InnoDB";
 		String oracle = 
@@ -55,13 +59,15 @@ public final class TpccStatements {
 				"  w_state char(2), "+ 
 				"  w_zip char(9), "+ 
 				"  w_tax decimal(4,2), "+ 
-				"  w_ytd decimal(12,2) "+
+				"  w_ytd decimal(12,2), "+
+				"  constraint warehouse_pk primary key(w_id)"+
 				")";
 		
 		switch (dbms) {
 		case MySQL:  return mysql;
 		case Oracle: return oracle;
-		default:     return sqlText;
+		case OB_Oracle: return oracle;
+		default: return sqlText;
 		}
 	}
 	
@@ -84,7 +90,8 @@ public final class TpccStatements {
 				"  s_ytd decimal(8,0), "+
 				"  s_order_cnt smallint, "+
 				"  s_remote_cnt smallint, "+
-				"  s_data varchar(50) "+
+				"  s_data varchar(50), "+
+				"  constraint stock_pk primary key (s_w_id, s_i_id) "+
 				")";
 		String mysql = sqlText + " Engine=InnoDB";
 		String oracle = 
@@ -105,13 +112,15 @@ public final class TpccStatements {
 				"  s_ytd decimal(8,0), "+
 				"  s_order_cnt smallint, "+
 				"  s_remote_cnt smallint, "+
-				"  s_data varchar2(50) "+
+				"  s_data varchar2(50), "+
+				"  constraint stock_pk primary key (s_w_id, s_i_id) "+
 				")";
 
 		switch (dbms) {
 		case MySQL:  return mysql;
 		case Oracle: return oracle;
-		default:     return sqlText;
+		case OB_Oracle: return oracle;
+		default: return sqlText;
 		}
 	}
 	
@@ -127,7 +136,8 @@ public final class TpccStatements {
 				"  d_zip char(9), "+ 
 				"  d_tax decimal(4,4), "+ 
 				"  d_ytd decimal(12,2), "+ 
-				"  d_next_o_id int "+
+				"  d_next_o_id int, "+
+				"  constraint district_pk primary key (d_w_id, d_id)" +
 				")";
 		String mysql = sqlText + " Engine=InnoDB";
 		String oracle = 
@@ -142,7 +152,8 @@ public final class TpccStatements {
 				"  d_zip char(9), "+
 				"  d_tax decimal(4,2), "+
 				"  d_ytd decimal(12,2), "+
-				"  d_next_o_id int "+
+				"  d_next_o_id int, "+
+				"  constraint district_pk primary key (d_w_id, d_id)" +
 				")";
 		
 		String pgsql = "create table district( "+
@@ -156,7 +167,8 @@ public final class TpccStatements {
 				"  d_zip char(9), "+ 
 				"  d_tax decimal(4,4), "+ 
 				"  d_ytd decimal(12,2), "+ 
-				"  d_next_o_id int "+
+				"  d_next_o_id int, "+
+				"  constraint district_pk primary key (d_w_id, d_id)" +
 				")";
 		
 		String db2 = pgsql;
@@ -165,11 +177,14 @@ public final class TpccStatements {
 		switch (dbms) {
 		case MySQL:  return mysql;
 		case Oracle: return oracle;
-		case PostgreSQL : return pgsql;
+		case OB_Oracle: return oracle;
+		case PostgreSQL: 
+		case OpenGauss:
+			return pgsql;
 		case DB2 : return db2;
 		case H2 : return h2; 
-		case Derby:  return derby;
-		default:     return sqlText;
+		case Derby: return derby;
+		default: return sqlText;
 		}
 	}
 	
@@ -196,7 +211,8 @@ public final class TpccStatements {
 				"  c_ytd_payment decimal(12,2), "+
 				"  c_payment_cnt smallint, "+
 				"  c_delivery_cnt smallint, "+
-				"  c_data text "+
+				"  c_data text, "+
+				"  constraint customer_pk primary key (c_w_id, c_d_id, c_id)" +
 				")";
 		String mysql = sqlText + " Engine=InnoDB";
 		String oracle =
@@ -221,7 +237,8 @@ public final class TpccStatements {
 				"  c_ytd_payment decimal(12,2), "+ 
 				"  c_payment_cnt smallint, "+ 
 				"  c_delivery_cnt smallint, "+ 
-				"  c_data clob "+
+				"  c_data clob, "+
+				"  constraint customer_pk primary key (c_w_id, c_d_id, c_id)" +
 				")";
 		String pgsql = 
 				"create table customer ( "+
@@ -245,7 +262,8 @@ public final class TpccStatements {
 				"  c_ytd_payment decimal(12,2), "+
 				"  c_payment_cnt smallint, "+
 				"  c_delivery_cnt smallint, "+
-				"  c_data text "+
+				"  c_data text, "+
+				"  constraint customer_pk primary key (c_w_id, c_d_id, c_id)" +
 				")";
 		String db2 = 				
 				"create table customer ( "+
@@ -269,7 +287,8 @@ public final class TpccStatements {
 				"  c_ytd_payment decimal(12,2), "+
 				"  c_payment_cnt smallint, "+
 				"  c_delivery_cnt smallint, "+
-				"  c_data clob "+
+				"  c_data clob, "+
+				"  constraint customer_pk primary key (c_w_id, c_d_id, c_id)" +
 				")";
 		String h2 = pgsql;
 		String derby = db2;
@@ -277,11 +296,13 @@ public final class TpccStatements {
 		switch (dbms) {
 		case MySQL:  return mysql;
 		case Oracle: return oracle;
+		case OB_Oracle: return oracle;
 		case PostgreSQL: return pgsql;
+		case OpenGauss: return pgsql;
 		case DB2: return db2;
 		case H2: return h2;
-		case Derby:  return derby;
-		default:     return sqlText;
+		case Derby: return derby;
+		default: return sqlText;
 		}
 	}
 
@@ -337,11 +358,13 @@ public final class TpccStatements {
 		switch (dbms) {
 		case MySQL:  return mysql;
 		case Oracle: return oracle;
+		case OB_Oracle: return oracle;
 		case PostgreSQL: return pgsql;
+		case OpenGauss: return pgsql;
 		case DB2: return db2;
 		case H2: return h2;
 		case Derby: return derby;
-		default:     return sqlText;
+		default: return sqlText;
 		}
 	}
 
@@ -355,7 +378,8 @@ public final class TpccStatements {
 				"  o_entry_d datetime, "+
 				"  o_carrier_id tinyint, "+
 				"  o_ol_cnt tinyint, "+ 
-				"  o_all_local tinyint "+
+				"  o_all_local tinyint, "+
+				"  constraint orders_pk primary key (o_w_id, o_d_id, o_id)"+
 				")";
 		String mysql = sqlText + " Engine=InnoDB";
 		String oracle = "create table orders ( "+
@@ -366,7 +390,8 @@ public final class TpccStatements {
 				"  o_entry_d date, "+
 				"  o_carrier_id number(3,0), "+
 				"  o_ol_cnt number(3,0), "+ 
-				"  o_all_local number(3,0) "+
+				"  o_all_local number(3,0), "+
+				"  constraint orders_pk primary key (o_w_id, o_d_id, o_id)"+
 				")";
 		String pgsql = 
 				"create table orders ( "+
@@ -377,7 +402,8 @@ public final class TpccStatements {
 				"  o_entry_d timestamp without time zone, "+
 				"  o_carrier_id smallint, "+
 				"  o_ol_cnt smallint, "+ 
-				"  o_all_local smallint "+
+				"  o_all_local smallint, "+
+				"  constraint orders_pk primary key (o_w_id, o_d_id, o_id)"+
 				")"; 
 		String db2 = 
 				"create table orders ( "+
@@ -388,18 +414,21 @@ public final class TpccStatements {
 				"  o_entry_d timestamp, "+
 				"  o_carrier_id smallint, "+
 				"  o_ol_cnt smallint, "+ 
-				"  o_all_local smallint "+
+				"  o_all_local smallint, "+
+				"  constraint orders_pk primary key (o_w_id, o_d_id, o_id)"+
 				")"; 
 		String h2 = pgsql;
 		String derby = db2;
 		switch (dbms) {
 		case MySQL:  return mysql;
 		case Oracle: return oracle;
+		case OB_Oracle: return oracle;
 		case PostgreSQL: return pgsql;
+		case OpenGauss:return pgsql;
 		case DB2: return db2;
 		case H2: return h2;
 		case Derby: return derby;
-		default:     return sqlText;
+		default: return sqlText;
 		}
 	}
 	
@@ -408,19 +437,22 @@ public final class TpccStatements {
 				"create table new_order ( "+
 				"  no_o_id int not null, "+
 				"  no_d_id tinyint not null, "+
-				"  no_w_id smallint not null "+
+				"  no_w_id smallint not null, "+
+				"  constraint new_order_pk primary key (no_w_id, no_d_id, no_o_id)"+
 				")";
 		String mysql = sqlText + " Engine=InnoDB";
 		String oracle = "create table new_order ( "+
 				"  no_o_id int not null, "+
 				"  no_d_id number(3,0) not null, "+
-				"  no_w_id smallint not null "+
+				"  no_w_id smallint not null, "+
+				"  constraint new_order_pk primary key (no_w_id, no_d_id, no_o_id)"+
 				")";
 		String pgsql =
 				"create table new_order ( "+
 				"  no_o_id int not null, "+
 				"  no_d_id smallint not null, "+
-				"  no_w_id smallint not null "+
+				"  no_w_id smallint not null, "+
+				"  constraint new_order_pk primary key (no_w_id, no_d_id, no_o_id)"+
 				")";
 		String db2 = pgsql;
 		String h2 = pgsql;
@@ -428,11 +460,13 @@ public final class TpccStatements {
 		switch (dbms) {
 		case MySQL:  return mysql;
 		case Oracle: return oracle;
+		case OB_Oracle: return oracle;
 		case PostgreSQL: return pgsql;
-		case DB2:    return db2;
+		case OpenGauss: return pgsql;
+		case DB2: return db2;
 		case H2: return h2;
 		case Derby:  return derby;
-		default:     return sqlText;
+		default: return sqlText;
 		}
 	}
 	
@@ -448,7 +482,8 @@ public final class TpccStatements {
 				"  ol_delivery_d datetime, "+ 
 				"  ol_quantity tinyint, "+ 
 				"  ol_amount decimal(6,2), "+ 
-				"  ol_dist_info char(24) "+
+				"  ol_dist_info char(24), "+
+				"  constraint order_line_pk primary key(ol_w_id, ol_d_id, ol_o_id, ol_number)" +
 				")";
 		String mysql = sqlText + " Engine=InnoDB";
 		String oracle =
@@ -462,7 +497,8 @@ public final class TpccStatements {
 				"  ol_delivery_d date, "+ 
 				"  ol_quantity number(3,0), "+ 
 				"  ol_amount decimal(6,2), "+ 
-				"  ol_dist_info char(24) "+
+				"  ol_dist_info char(24), "+
+				"  constraint order_line_pk primary key(ol_w_id, ol_d_id, ol_o_id, ol_number)" +
 				")";
 		String pgsql = 
 				"create table order_line ( "+
@@ -475,7 +511,8 @@ public final class TpccStatements {
 				"  ol_delivery_d timestamp without time zone, "+ 
 				"  ol_quantity smallint, "+ 
 				"  ol_amount decimal(6,2), "+ 
-				"  ol_dist_info char(24) "+
+				"  ol_dist_info char(24), "+
+				"  constraint order_line_pk primary key(ol_w_id, ol_d_id, ol_o_id, ol_number)" +
 				")";
 		String db2 = 
 				"create table order_line ( "+
@@ -488,13 +525,16 @@ public final class TpccStatements {
 				"  ol_delivery_d timestamp, "+ 
 				"  ol_quantity smallint, "+ 
 				"  ol_amount decimal(6,2), "+ 
-				"  ol_dist_info char(24) "+
+				"  ol_dist_info char(24), "+
+				"  constraint order_line_pk primary key(ol_w_id, ol_d_id, ol_o_id, ol_number)" +
 				")";
 		String derby = db2;
 		switch (dbms) {
 		case MySQL:  return mysql;
 		case Oracle: return oracle;
+		case OB_Oracle: return oracle;
 		case PostgreSQL: return pgsql;
+		case OpenGauss: return pgsql;
 		case DB2 : return db2;
 		case Derby: return derby;
 		default:     return sqlText;
@@ -680,8 +720,6 @@ public final class TpccStatements {
 				+ "ol_supply_w_id, ol_quantity, ol_amount, ol_dist_info) values (?,?,?,?,?,?,?,?,?)";
 		return sqlText;
 	}
-
-	
 	
 	////// A.2	The Payment Transaction
 	/**

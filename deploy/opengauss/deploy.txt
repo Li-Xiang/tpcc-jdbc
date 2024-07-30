@@ -1,0 +1,36 @@
+1. download jdbc
+-----------------
+Download openGauss jdbc driver(https://opengauss.org/en/download/), and extract opengauss-jdbc-*.jar to lib directory.
+
+2. Create database tpcc
+-----------------------
+# su - omm
+$ gsql
+openGauss=# create user tpcc_user with password 'tpcc_pa55wd';
+openGauss=# create database tpcc with template=template0 encoding ='UTF8' lc_collate='C.UTF-8' lc_ctype='C.UTF-8' owner tpcc_user;
+openGauss=# \c tpcc
+tpcc=# grant create on schema public to tpcc_user;
+
+
+
+openGauss=# show password_encryption_type;
+ password_encryption_type
+--------------------------
+ 2
+
+$ grep sha256 pg_hba.conf
+host     all             all             0.0.0.0/0          sha256
+
+$ gsql -Utpcc_user -h localhost -p 15400 -W"tpcc_pa55wd" -d tpcc
+
+3. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-gs.json
+
+4. Run TPC-C benchmark.
+-----------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-gs.json
+
+5. (optional) Drop TPC-C tables and data.
+-----------------------------------------
+$ ./tpcc.sh drop ./demos/benchmark-gs.json

@@ -1,0 +1,33 @@
+For OceanBase Oracle Compatibility Tenant
+
+1. download jdbc
+----------------
+Download oceanbase jdbc driver(https://www.oceanbase.com/softwarecenter-cloud), and extract  oceanbase-client-*.jar to lib directory.
+
+2. Create tpcc schema 
+---------------------
+Create tpcc schema in OceanBase (Oracle compatibility) tenant.
+
+# Example:
+#  ob proxy   : 127.0.0.1:2883
+#  ob cluster : ob3c
+#  tenant     : oracle01
+
+$ obclient -u sys@oracle01#ob3c -h 127.1 -P2883 -p"your_sys_password" -c -A 
+obclient [SYS]> create user tpcc identified by tpcc_passwd;
+obclient [SYS]> grant connect to tpcc;
+obclient [SYS]> grant resource to tpcc;
+obclient [SYS]> grant execute on DBMS_STATS to tpcc;
+obclient [SYS]> alter system set open_cursors = 500;
+
+3. Load TPC-C tables and data.
+------------------------------
+$ ./tpcc.sh load ./demos/benchmark-oceanbase-oracle.json
+
+4. Run TPC-C benchmark.
+------------------------
+$ ./tpcc.sh benchmark ./demos/benchmark-mysql.json
+
+5. (optional) Drop TPC-C tables and data.
+-----------------------------------------
+$ ./tpcc.sh drop ./demos/benchmark-mysql.json

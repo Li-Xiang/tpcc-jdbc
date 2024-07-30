@@ -3,11 +3,8 @@ package org.littlestar.tpcc;
 import java.util.Objects;
 
 public enum Dbms {
-	MySQL, Oracle, Derby, SQLite, MSSQL, PostgreSQL, DB2, H2, Unknown;
-	//public static final String MYSQL  = "MySQL";
-	//public static final String MSSQL  = "MSSQL";
-	//public static final String SQLITE = "SQLite";
-	public static final String MYSQL_CJ_DRIVER = "com.mysql.cj.jdbc.Driver";
+	MySQL, Oracle, Derby, SQLite, MSSQL, PostgreSQL, DB2, H2, OB_Oracle, OB_MySQL, DM, OpenGauss, Unknown;
+
 	private Dbms() {}
 
 	public static Dbms parse(String name) {

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
 
@@ -879,8 +878,9 @@ public final class TpccTransaction implements TpccConstants {
 	}
 
 
-	private static Timestamp getNow() {
-		return Timestamp.valueOf(LocalDateTime.now());
+	public static Timestamp getNow() {
+		//return Timestamp.valueOf(LocalDateTime.now());
+		return new Timestamp(new Date().getTime());
 	}
 	
 	private static String substring(String src, int maxLen) {

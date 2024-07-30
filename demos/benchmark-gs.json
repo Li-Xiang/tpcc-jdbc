@@ -1,0 +1,18 @@
+{
+  "benchmark": {
+	"dbms": "OpenGauss",
+    "warehouses": "5",
+    "threads": "5",
+	"ramp-up": "6",
+    "runtime": "60",
+    "report-interval": "4",
+    "log-level": "info"
+  },
+  "connectionPool": {
+    "jdbcUrl": "jdbc:opengauss://192.168.99.61:5432/tpcc",
+	"username": "tpcc_user",
+	"password": "tpcc_pa55wd",
+    "maximumPoolSize": "5"
+  },
+  "dataSource": {}
+}

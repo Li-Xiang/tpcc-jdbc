@@ -1,0 +1,25 @@
+{
+  "benchmark": {
+    "dbms": "OB_Oracle",
+    "warehouses": "4",
+    "threads": "4",
+    "ramp-up": "6",
+    "runtime": "60",
+    "report-interval": "4",
+    "log-level": "info"
+  },
+  "connectionPool": {
+    "jdbcUrl": "jdbc:oceanbase://192.168.6.11:8089/",
+    "username": "tpcc@oracle01#ob3c",
+    "password": "tpcc_passwd",
+    "maximumPoolSize": "10"
+  },
+  "dataSource": {
+    "characterEncoding":"UTF-8",
+	"useUnicode":"true",
+    "rewriteBatchedStatements":"true",
+	"useServerPrepStmts":"true",
+	"allowMultiQueries":"true",
+	"useLocalSessionState":"true"
+  }
+}

@@ -1,6 +1,8 @@
 package org.littlestar.tpcc;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.Duration;
@@ -156,7 +158,7 @@ public class TpccLoader implements TpccConstants {
 			if(enableFk) {
 				addForeignKeys(connection);
 			}
-			LOGGER.info(">>>> indexes and constraints done.");
+			LOGGER.info(">>>>   indexes and constraints done.");
 		} catch (Exception e) {
 			LOGGER.error("Create table's indexes and constraints failed.", e);
 		}
@@ -166,7 +168,7 @@ public class TpccLoader implements TpccConstants {
 		LOGGER.info(">>>> Creating TPC-C table's foreign keys:");
 		try (Connection connection = dataSource.getConnection()) {
 			addForeignKeys(connection);
-			LOGGER.info(">>>> Foreign keys created.");
+			LOGGER.info(">>>>   foreign keys created.");
 		} catch (Exception e) {
 			LOGGER.error("Drop TPC-C table's foreign key failed.", e);
 		}
@@ -179,56 +181,21 @@ public class TpccLoader implements TpccConstants {
 		String index2 = "create index idx_orders on orders (o_w_id,o_d_id,o_c_id,o_id)";
 		executeUpdate(connection, index2);
 
-		String index3 = "create index fkey_stock_2 on stock (s_i_id)";
-		executeUpdate(connection, index3);
+		if (!Objects.equals(dbms, Dbms.DM)) {
+			String index3 = "create index fkey_stock_2 on stock (s_i_id)";
+			executeUpdate(connection, index3);
 
-		String index4 = "create index fkey_order_line_2 on order_line (ol_supply_w_id,ol_i_id)";
-		executeUpdate(connection, index4);
-
-		if (Objects.equals(dbms, Dbms.MSSQL)) {
-			String index5 = "create index idx_stock_1 on stock (s_i_id, s_w_id)";
-			executeUpdate(connection, index5);
-
-			String index6 = "create index idx_district_1 on district (d_id, d_w_id)";
-			executeUpdate(connection, index6);
+			String index4 = "create index fkey_order_line_2 on order_line (ol_supply_w_id,ol_i_id)";
+			executeUpdate(connection, index4);
 		}
+		
+		String index5 = "create index idx_stock_1 on stock (s_i_id, s_w_id)";
+		executeUpdate(connection, index5);
 
-		if (Objects.equals(dbms, Dbms.SQLite)) {
-			// SQLite does not support ADD CONSTRAINT in the ALTER TABLE statement.
-			String uk1 = "create unique index if not exists warehouse_pk on warehouse(w_id)";
-			executeUpdate(connection, uk1);
-			String uk2 = "create unique index if not exists district_pk on district(d_w_id, d_id)";
-			executeUpdate(connection, uk2);
-			String uk3 = "create unique index if not exists customer_pk on customer(c_w_id, c_d_id, c_id)";
-			executeUpdate(connection, uk3);
-			String uk4 = "create unique index if not exists new_order_pk on new_order(no_w_id, no_d_id, no_o_id)";
-			executeUpdate(connection, uk4);
-			String uk5 = "create unique index if not exists orders_pk on orders(o_w_id, o_d_id, o_id)";
-			executeUpdate(connection, uk5);
-			String uk6 = "create unique index if not exists order_line_pk on order_line(ol_w_id, ol_d_id, ol_o_id, ol_number)";
-			executeUpdate(connection, uk6);
-			String uk7 = "create unique index if not exists item_pk on item(i_id)";
-			executeUpdate(connection, uk7);
-			String uk8 = "create unique index if not exists stock_pk on stock(s_w_id, s_i_id)";
-			executeUpdate(connection, uk8);
-		} else {
-			String pk1 = "alter table warehouse add constraint warehouse_pk primary key (w_id)";
-			executeUpdate(connection, pk1);
-			String pk2 = "alter table district add constraint district_pk primary key (d_w_id, d_id)";
-			executeUpdate(connection, pk2);
-			String pk3 = "alter table customer add constraint customer_pk primary key (c_w_id, c_d_id, c_id)";
-			executeUpdate(connection, pk3);
-			String pk4 = "alter table new_order add constraint new_order_pk primary key (no_w_id, no_d_id, no_o_id)";
-			executeUpdate(connection, pk4);
-			String pk5 = "alter table orders add constraint orders_pk primary key (o_w_id, o_d_id, o_id)";
-			executeUpdate(connection, pk5);
-			String pk6 = "alter table order_line add constraint order_line_pk primary key(ol_w_id, ol_d_id, ol_o_id, ol_number)";
-			executeUpdate(connection, pk6);
-			String pk7 = "alter table item add constraint item_pk primary key (i_id)";
-			executeUpdate(connection, pk7);
-			String pk8 = "alter table stock add constraint stock_pk primary key (s_w_id, s_i_id)";
-			executeUpdate(connection, pk8);
-		}
+		String index6 = "create index idx_district_1 on district (d_id, d_w_id)";
+		executeUpdate(connection, index6);
+		
+		//因为不同数据库系统的语法有差异, PK在创建表的时候指定, 不再通过alter table ... add constraint方式添加方式。
 	}
 	
 	private void addForeignKeys(Connection connection) throws Exception {
@@ -258,6 +225,59 @@ public class TpccLoader implements TpccConstants {
 		executeUpdate(connection, fk10);
 	}
 	
+	public void doGatherStatistics() throws Exception {
+		LOGGER.info("Gather statistics...");
+		if (Objects.equals(dbms, Dbms.DM) || Objects.equals(dbms, Dbms.OB_Oracle)) {
+			int estimatePct = 85;
+			boolean blockSample = true;
+			String methodOpt = "FOR ALL COLUMNS SIZE AUTO";
+			int degree = threads;
+			callDbmsStats(estimatePct, blockSample, methodOpt, degree);
+		} else if (Objects.equals(dbms, Dbms.PostgreSQL) || Objects.equals(dbms, Dbms.OpenGauss)) {
+			String[] tables = new String[] { 
+					"item", 
+					"warehouse", 
+					"stock", 
+					"district", 
+					"customer", 
+					"history", 
+					"orders",
+					"new_order", 
+					"order_line" 
+				};
+			for (String table : tables) {
+				try (Connection connection = dataSource.getConnection();
+						Statement stmt = connection.createStatement()) {
+					String sqlText = "analyze " + table;
+					LOGGER.info("  " + sqlText);
+					stmt.execute(sqlText);
+				}
+			}
+		}
+	}
+	
+	private void callDbmsStats(int estimatePct, boolean blockSample, String methodOpt, int degree) throws Exception {
+		LOGGER.info("  call DBMS_STATS.GATHER_SCHEMA_STATS ...");
+		try (Connection connection = dataSource.getConnection();
+				PreparedStatement queryStmt = connection
+						.prepareStatement("SELECT SYS_CONTEXT ('userenv', 'current_schema') current_schema FROM DUAL;");
+				CallableStatement callStmt = connection
+						.prepareCall("{call DBMS_STATS.GATHER_SCHEMA_STATS(?, ?, ?, ?, ?)}")) {
+			try (ResultSet rs = queryStmt.executeQuery()) {
+				if (rs.next()) {
+					String owner = rs.getString(1);
+					callStmt.setString(1, owner);
+					callStmt.setInt(2, estimatePct);
+					callStmt.setBoolean(3, blockSample);
+					callStmt.setString(4, methodOpt);
+					callStmt.setInt(5, degree);
+					callStmt.execute();
+					LOGGER.info(">>>> Gather statistics for '" + owner + "' done.");
+				}
+			}
+		}
+	}
+	
 	public void doDropForeignKeys() {
 		LOGGER.info(">>>> droping TPC-C table's foreign-keys:");
 		try (Connection connection = dataSource.getConnection()) {
@@ -269,7 +289,6 @@ public class TpccLoader implements TpccConstants {
 	}
 	
 	private void dropForeignKeys(Connection connection) throws Exception {
-		
 		String fk1 = "alter table district drop constraint fkey_district_1";
 		String fk2 = "alter table customer drop constraint fkey_customer_1";
 		String fk3 = "alter table history drop constraint fkey_history_1";
@@ -306,7 +325,6 @@ public class TpccLoader implements TpccConstants {
 		executeUpdate(connection, fk10);
 	}
 	
-	
 	private void dropTables(Connection connection) {
 		String tab1 = "drop table item";
 		executeUpdate(connection, tab1);
@@ -327,7 +345,6 @@ public class TpccLoader implements TpccConstants {
 		String tab9 = "drop table warehouse";
 		executeUpdate(connection, tab9);
 	}
-	
 	
 	public void doDropTables() {
 		LOGGER.info(">>>> Drop TPC-C tables:");

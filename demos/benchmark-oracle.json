@@ -1,7 +1,7 @@
 {
   "benchmark": {
 	"dbms": "Oracle",
-    "warehouses": "2",
+    "warehouses": "5",
     "threads": "5",
 	"ramp-up": "0",
     "runtime": "20",
